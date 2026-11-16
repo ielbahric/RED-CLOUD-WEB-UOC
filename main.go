@@ -1,29 +1,37 @@
+
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+    "fmt"
+    "log"
+    "net/http"
+    "os"
 )
 
 func main() {
 
-	// Permitir que Go muestre las imagenes de la carpeta static
-	http.Handle("/static/",
-		http.StripPrefix("/static/",
-			http.FileServer(http.Dir("static"))))
+    // Mostrar las imagenes de la carpeta static
+    http.Handle("/static/",
+        http.StripPrefix("/static/",
+            http.FileServer(http.Dir("static"))))
 
-	// Crear la pagina principal
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    // Obtener el nombre del pod de Kubernetes
+    hostname, err := os.Hostname()
+    if err != nil {
+        hostname = "desconocido"
+    }
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    // Crear la pagina principal
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
-		fmt.Fprintln(w, `
+        w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+        fmt.Fprintf(w, `
         <!DOCTYPE html>
         <html lang="es">
         <head>
             <meta charset="UTF-8">
-            <title>Mi primera web con Go</title>
+            <title>RED CLOUD - UOC</title>
         </head>
         <body style="text-align:center; font-family:Arial;">
 
@@ -33,12 +41,15 @@ func main() {
                  alt="Imagen de la UOC"
                  width="350">
 
+            <h2>RED CLOUD - Kubernetes</h2>
+            <p>Peticion atendida por el pod: <strong>%s</strong></p>
+
         </body>
         </html>
-        `)
-	})
+        `, hostname)
+    })
 
-	// Iniciar el servidor
-	log.Println("Servidor iniciado en http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+    log.Println("Servidor iniciado en http://localhost:8080")
+    log.Fatal(http.ListenAndServe(":8080", nil))
 }
+
