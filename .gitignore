@@ -1,0 +1,18 @@
+
+# Archivos ejecutables
+*.exe
+
+# Archivos temporales
+*.log
+*.tmp
+
+# Claves privadas
+*.pem
+*.key
+
+# Configuracion local de VS Code
+.vscode/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
