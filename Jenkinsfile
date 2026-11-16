@@ -6,13 +6,14 @@ pipeline {
         stage('Comprobar GitHub') {
             steps {
                 echo 'RED CLOUD - Inicio del Pipeline'
-                echo 'Codigo descargado desde GitHub correctamente'
+                sh 'ls -la'
             }
         }
 
-        stage('Comprobar archivos') {
+        stage('Construir imagen Docker') {
             steps {
-                sh 'ls -la'
+                echo 'Construyendo la aplicacion Go'
+                sh 'docker build -t red-cloud-web:1.0 .'
             }
         }
     }
