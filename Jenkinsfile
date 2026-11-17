@@ -1,57 +1,26 @@
-
 pipeline {
-    agent none
+    agent { label 'built-in' }
 
     stages {
-        stage('Construir Docker en AWS') {
-            agent {
-                label 'built-in'
-            }
+        stage('Construir imagen de pruebas') {
             steps {
-                checkout scm
-                echo 'RED CLOUD - Construyendo Docker en AWS'
-                sh 'docker build -t red-cloud-web:1.0 .'
+                echo 'RED CLOUD - Rama pruebas'
+                sh 'docker build -t red-cloud-web:pruebas-${BUILD_NUMBER} .'
             }
         }
 
-        stage('Desplegar Docker en AWS') {
-            agent {
-                label 'built-in'
-            }
+        stage('Desplegar en pruebas (puerto 8082)') {
             steps {
-                echo 'Desplegando aplicacion en AWS'
                 sh '''
-                    docker rm -f red-cloud-web || true
-                    docker run -d --name red-cloud-web -p 8081:8080 red-cloud-web:1.0
+                    docker rm -f red-cloud-web-pruebas || true
+                    docker run -d --name red-cloud-web-pruebas -e ENTORNO=pruebas -p 8082:8080 red-cloud-web:pruebas-${BUILD_NUMBER}
                 '''
             }
         }
 
-        stage('Construir imagen para Kubernetes') {
-            agent {
-                label 'kubernetes'
-            }
+        stage('Comprobar que responde') {
             steps {
-                checkout scm
-                echo 'Construyendo imagen en Minikube'
-                sh 'minikube image build -t red-cloud-web:${BUILD_NUMBER} .'
-            }
-        }
-
-        stage('Desplegar en Kubernetes') {
-            agent {
-                label 'kubernetes'
-            }
-            steps {
-                checkout scm
-                echo 'Actualizando Kubernetes'
-                sh '''
-                    kubectl apply -f service.yaml
-                    kubectl apply -f deployment.yaml
-                    kubectl set image deployment/red-cloud-web red-cloud-web=red-cloud-web:${BUILD_NUMBER}
-                    kubectl rollout status deployment/red-cloud-web --timeout=180s
-                    kubectl get pods
-                '''
+                sh 'sleep 3 && curl -s http://localhost:8082/ | grep "Entorno"'
             }
         }
     }

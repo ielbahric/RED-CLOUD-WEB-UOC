@@ -21,6 +21,12 @@ func main() {
         hostname = "desconocido"
     }
 
+    // Entorno en el que corre la web (lo pone Jenkins al arrancar el contenedor)
+    entorno := os.Getenv("ENTORNO")
+    if entorno == "" {
+        entorno = "produccion"
+    }
+
     // Crear la pagina principal
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
@@ -41,12 +47,12 @@ func main() {
                  alt="Imagen de la UOC"
                  width="350">
 
-            <h2>RED CLOUD - Kubernetes</h2>
+  <h2>RED CLOUD - Entorno: %s</h2>
             <p>Peticion atendida por el pod: <strong>%s</strong></p>
 
         </body>
         </html>
-        `, hostname)
+        `, entorno, hostname)
     })
 
     log.Println("Servidor iniciado en http://localhost:8080")
